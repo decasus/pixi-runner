@@ -55,10 +55,13 @@ export class Enemy extends Sprite {
 }
 
 export class EnemyFactory {
-    createEnemies(path, container) {
+    create(path, container) {
         for (let i = 0; i < path.length; i++) {
             path[i].forEach((value, index) => {
-                !value && container.addChild(new Enemy(enemyPositions[index], -100 * i));
+                if(!value) {
+                    //Math.floor(Math.random() * 2) &&
+                    container.addChild(new Enemy(enemyPositions[index], -100 * i));
+                }
             })
         }
     }
