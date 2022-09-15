@@ -2,7 +2,7 @@ import {Sprite, Texture} from "pixi.js";
 import {enemySources} from "../../../../constants/constants";
 
 export default class Enemy extends Sprite {
-    constructor(x, y) {
+    constructor(x = 0, y = 0) {
         super();
         this.anchor.set(0.5);
         this.scale.y = 0.5;
