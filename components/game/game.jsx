@@ -14,10 +14,8 @@ const Game = () => {
         game.start();
 
         return () => {
-
-            //game.stop();
             game.destroy(true, true);
-            //clearInterval(heroAnim);
+            clearInterval(game.interval);
             //document.removeEventListener("touchstart", touchStart);
             //document.removeEventListener("touchend", touchEnd);
         }
@@ -25,7 +23,7 @@ const Game = () => {
     }, []);
 
     return (<div>
-        <div>Ваши жизни: {score}</div>
+        {/*<div>Ваши жизни: {score}</div>*/}
         <div ref={ref}></div>
     </div>);
 }

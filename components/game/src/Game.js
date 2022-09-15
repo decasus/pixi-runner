@@ -1,8 +1,10 @@
-import {Application, Container, Renderer} from "pixi.js";
-import Hero from "./sprites/hero";
-import House from "./sprites/house";
-import Wave from "./sprites/wave";
-import EnemyFactory from "./EnemyFactory";
+import {Application, Container, Renderer, Texture} from "pixi.js";
+import Hero from "./sprites/Hero";
+import House from "./sprites/House";
+import Wave from "./sprites/Wave";
+import Factory from "./Factory";
+import Enemy from "./sprites/Enemy";
+import {enemyPositions, enemySources} from "../../../constants/constants";
 
 
 class RunnerGame extends Application {
@@ -14,6 +16,7 @@ class RunnerGame extends Application {
             width: 390, height: 844, backgroundColor: 0x323232, antialias: true
         });
         this.state = 0;
+        console.log(this);
     }
 
 // Меняем состояние
@@ -22,12 +25,10 @@ class RunnerGame extends Application {
 
         const hero = new Hero(235, 720);
         this.stage.addChild(hero);
-        const heroAnim = hero.animate(this.speed);
+        this.interval = hero.animate(this.speed);
 
-        for (let i = 0; i < 13; i++) {
-            this.stage.addChild(new House(14, 75 * i + 1));
-            this.stage.addChild(new House(376, 75 * i + 1));
-        }
+        const houses = new Container();
+        this.stage.addChild(houses);
 
         //this.stage.addChild(new Wave());
 
@@ -73,8 +74,6 @@ class RunnerGame extends Application {
             return matrix;
         }
 
-        const enemyFactory = new EnemyFactory();
-
         let touchstartX = 0
         let touchendX = 0
 
@@ -97,25 +96,58 @@ class RunnerGame extends Application {
         this.ticker.add(gameLoop);
 
         let steps = 0;
-
         let time = 0;
 
+        const factory = new Factory();
 
         function gameLoop(delta) {
             time += 0.1 * delta;
             steps++;
 
-            if (steps % 95 === 1) enemyFactory.create(createMatrix(), enemies)
-
             if (hero.moveLeft) hero.x > hero.moveLeft ? hero.x -= 10 : hero.moveLeft = 0;
             if (hero.moveRight) hero.x < hero.moveRight ? hero.x += 10 : hero.moveRight = 0;
+
+            if (steps % 95 === 1) {
+                const matrix = createMatrix();
+                matrix.forEach((matrixLine, lineIndex) => {
+                    matrixLine.forEach((value, index) => {
+                        if (!value) {
+                            const enemy = factory.create("Enemy");
+                            enemy.x = enemyPositions[index];
+                            enemy.y = -100 * lineIndex;
+                            enemies.addChild(enemy);
+                        }
+                    })
+                });
+                for (let i = 0; i < 6; i++) {
+                    const houseLeft = factory.create("House");
+                    houseLeft.x = 14;
+                    houseLeft.y = 75 * (i-5);
+                    houses.addChild(houseLeft);
+                    const houseRight = factory.create("House");
+                    houseRight.x = 376;
+                    houseRight.y = 75 * (i-5);
+                    houses.addChild(houseRight);
+                }
+            }
+
+            houses.children.forEach(house => {
+                house.y += speed * delta;
+                if(house.y > 900) {
+                    house.isActive = false;
+                    houses.removeChild(house)
+                }
+            });
             enemies.children.forEach(enemy => {
                 enemy.y += speed * delta;
                 if (rectIntersect(hero, enemy) && enemy.alpha === 1) {
                     enemy.alpha = 0.2;
                     //setScore(score => score - 1);
                 }
-                if (enemy.y > 900) enemies.removeChild(enemy)
+                if (enemy.y > 900) {
+                    enemy.isActive = false;
+                    enemies.removeChild(enemy)
+                }
             });
         }
     }

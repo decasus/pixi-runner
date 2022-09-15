@@ -11,4 +11,10 @@ export default class Enemy extends Sprite {
         this.y = y;
         this.texture = Texture.from(enemySources[Math.floor(Math.random() * enemySources.length)]);
     }
+
+    reset() {
+        this.scale.x = [0.5, -0.5][Math.floor(Math.random() * 2)];
+        this.texture = Texture.from(enemySources[Math.floor(Math.random() * enemySources.length)]);
+        this.alpha = 1;
+    }
 }
