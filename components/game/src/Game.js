@@ -119,7 +119,7 @@ class RunnerGame extends Application {
     }
 }
 
-export default new RunnerGame();
+export const game = new RunnerGame();
 
 
 // TODO ФАБРИКА ВОЗВРАЩАЕТ ПУСТОЙ ОБЪЕКТ - БАЗОВАЯ ФАБРИКА

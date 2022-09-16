@@ -1,23 +1,22 @@
 import {createSlice} from '@reduxjs/toolkit'
 
 
-export const gameSlice = createSlice({
+const gameSlice = createSlice({
     name: 'state',
-    initialState: 'idle',
+    initialState: 'IDLE',
     reducers: {
-        loading: () => 'loading',
-        start: () => 'start'
+        loading: () => 'LOADING',
+        start: () => 'START'
     },
-})
+});
 
+export default gameSlice.reducer
+export const {loading, start} = gameSlice.actions;
 
 
 // TODO СОЗДАТЬ СЛАЙС ПОД ИГРУ
-
 // TODO СВОЙСТВО STATE
-
 // TODO КОМПОЕНТ ЗАМОУНТИЛСЯ -> СОСТОЯНИЕ ЗАГРУЗКИ, ВЫЗЫВАЮ РЕДЮСЕР, МЕНЯЮ НА ЛОАДИНГ
-
 // TODO ИГРА ДОЛЖНА ВЕРНУТЬ ПРОМИС ВЫОЛНЕНИЯ СОСТОЯНИЯ
 
 // fulfilled

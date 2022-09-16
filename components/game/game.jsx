@@ -1,34 +1,33 @@
 import {useRef, useEffect, useState} from "react";
-import RunnerGame from "./src/Game";
+import {game} from "./src/Game";
 import {useDispatch, useSelector} from "react-redux";
-import {gameSlice} from "../../store/gameSlice";
+import {loading, start} from "../../store/gameSlice";
 
 const Game = () => {
     const ref = useRef(null);
     const [score, setScore] = useState(0);
 
-    const count = useSelector(state => state);
+    const state = useSelector(state => state);
     const dispatch = useDispatch();
-
 
     useEffect(() => {
 
-        ref.current.appendChild(RunnerGame.view);
+        dispatch(loading());
 
-        RunnerGame.init();
-        RunnerGame.start();
-
+        ref.current.appendChild(game.view);
+        game.init();
+        game.start();
+        dispatch(start());
         return () => {
-            RunnerGame.clear();
-            RunnerGame.destroy(true, true);
+            game.clear();
+            game.destroy(true, true);
         }
 
     }, []);
 
     return (<div>
-        <button onClick={() => dispatch(gameSlice.actions.loading())}>Start loading</button>
-        <button onClick={() => dispatch(gameSlice.actions.start())}>Start game</button>
-        <div>State: {count}</div>
+        <button onClick={() => dispatch(start())}>Start game</button>
+        <div>State: {state}</div>
         <div ref={ref}></div>
     </div>);
 }
