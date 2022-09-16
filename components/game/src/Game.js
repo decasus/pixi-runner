@@ -1,44 +1,22 @@
-import {Application, Container, Renderer, Texture} from "pixi.js";
-import Hero from "./sprites/Hero";
-import House from "./sprites/House";
-import Wave from "./sprites/Wave";
-import Factory from "./Factory";
-import Enemy from "./sprites/Enemy";
-import {enemyPositions} from "../../../constants/constants";
-import Router from "./Router";
-import {rectIntersect} from "../../../utils/rectIntersect";
+import {Application, Loader, Renderer} from "pixi.js";
+import Level from "./Level";
 
 class RunnerGame extends Application {
 
     constructor() {
         super();
+    }
+
+    init(ref) {
         this.renderer = new Renderer({
             width: 390, height: 844, backgroundColor: 0x323232, antialias: true
         });
-        this.state = 0;
         this.intervals = [];
         this.events = [];
-        this.time = 0;
+        ref.current.appendChild(this.view);
     }
 
-// Меняем состояние
-    init() {
-        let speed = 4;
-
-        const hero = new Hero(235, 720);
-        this.stage.addChild(hero);
-        this.intervals.push(hero.animate(speed));
-
-        const houses = new Container();
-        this.stage.addChild(houses);
-
-        //this.stage.addChild(new Wave());
-
-        const enemies = new Container();
-        this.stage.addChild(enemies);
-
-        const router = new Router();
-
+    initTouchEvents(hero) {
         let touchstartX = 0
         let touchendX = 0
 
@@ -59,67 +37,48 @@ class RunnerGame extends Application {
         this.events.push({type: "touchstart", handler: touchStart})
         document.addEventListener("touchend", touchEnd);
         this.events.push({type: "touchend", handler: touchEnd})
-
-        const factory = new Factory();
-
-        const gameLoop = (delta) => {
-            this.time++;
-
-            if (hero.moveLeft) hero.x > hero.moveLeft ? hero.x -= 10 : hero.moveLeft = 0;
-            if (hero.moveRight) hero.x < hero.moveRight ? hero.x += 10 : hero.moveRight = 0;
-
-            if (this.time % 50 === 1) {
-                const matrix = router.createMatrix();
-                matrix.forEach((matrixLine, lineIndex) => {
-                    matrixLine.forEach((value, index) => {
-                        if (!value) {
-                            const enemy = factory.create("Enemy");
-                            enemy.x = enemyPositions[index];
-                            enemy.y = -100 * lineIndex;
-                            enemies.addChild(enemy);
-                        }
-                    })
-                });
-/*                for (let i = 0; i < 6; i++) {
-                    const houseLeft = factory.create("House");
-                    houseLeft.x = 14;
-                    houseLeft.y = 75 * (i-5);
-                    houses.addChild(houseLeft);
-                    const houseRight = factory.create("House");
-                    houseRight.x = 376;
-                    houseRight.y = 75 * (i-5);
-                    houses.addChild(houseRight);
-                }*/
-            }
-
-/*            houses.children.forEach(house => {
-                house.y += speed * delta;
-                if(house.y > 900) {
-                    house.isActive = false;
-                    houses.removeChild(house)
-                }
-            });*/
-            enemies.children.forEach(enemy => {
-                enemy.y += speed * delta;
-                if (rectIntersect(hero, enemy) && enemy.alpha === 1) {
-                    enemy.alpha = 0.2;
-                    //setScore(score => score - 1);
-                }
-                if (enemy.y > 1000) {
-                    enemy.isActive = false;
-                    enemies.removeChild(enemy)
-                }
-            });
-        }
-        this.ticker.add(gameLoop);
     }
+
+    loadTextures() {
+        return new Promise((resolve, reject) => {
+            Loader.shared
+                .add('hero', '/images/hero.png')
+                .add('enemy_1', 'images/enemy_1.png')
+                .add('enemy_2', 'images/enemy_2.png')
+                .add('bonus', 'images/bonus.png')
+                .add('home_1', 'images/home-1.png')
+                .add('home_2', 'images/home-2.png')
+                .add('home_3', 'images/home-3.png')
+                .add('home_4', 'images/home-4.png')
+                .add('home_5', 'images/home-5.png')
+                .add('home_6', 'images/home-6.png')
+                .add('home_7', 'images/home-7.png')
+                .add('wave', 'images/wave.png')
+                .load();
+            Loader.shared.onComplete.add(() => resolve())
+            Loader.shared.onError.add(() => reject())
+        });
+    };
+
+    initLevel() {
+        this.level = new Level();
+        const {level} = this;
+        level.init();
+        this.initTouchEvents(level.hero);
+        this.stage.addChild(level);
+        this.ticker.add(level.gameLoop);
+    }
+
+    // Сообщаю игре стейт ->
+    // Могу создавать промис внутри обработчика, если не возвращает промис, то по умолчанию
+
     clear() {
-        this.intervals.forEach(interval => clearInterval(interval))
         this.events.forEach(e => document.removeEventListener(e.type, e.handler))
+        Loader.shared.reset();
     }
 }
 
-export const game = new RunnerGame();
+export default new RunnerGame;
 
 
 // TODO ФАБРИКА ВОЗВРАЩАЕТ ПУСТОЙ ОБЪЕКТ - БАЗОВАЯ ФАБРИКА

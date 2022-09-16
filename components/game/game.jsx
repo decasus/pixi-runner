@@ -1,23 +1,49 @@
 import {useRef, useEffect, useState} from "react";
-import {game} from "./src/Game";
 import {useDispatch, useSelector} from "react-redux";
-import {loading, start} from "../../store/gameSlice";
+import {
+    gameInit, gameInitFulfilled, levelInit, levelInitFulfilled,
+    loading,
+    loadingFulfilled,
+    preloadResources,
+    preloadResourcesFulfilled,
+    start
+} from "../../store/gameSlice";
 
 const Game = () => {
-    const ref = useRef(null);
-    const [score, setScore] = useState(0);
-
+    const mount = useRef(null);
     const state = useSelector(state => state);
     const dispatch = useDispatch();
 
+    // Сеттер с инстансом игры, логика перехода между стейтами
+
     useEffect(() => {
 
+        let game;
         dispatch(loading());
 
-        ref.current.appendChild(game.view);
-        game.init();
-        game.start();
-        dispatch(start());
+        // Написать функцию requestState
+
+        import("./src/Game.js").then(async ({default: RunnerGame}) => {
+
+            dispatch(loadingFulfilled());
+
+            dispatch(gameInit());
+            game = RunnerGame;
+            game.init(mount);
+            dispatch(gameInitFulfilled());
+
+            dispatch(preloadResources());
+            await game.loadTextures();
+            dispatch(preloadResourcesFulfilled());
+
+            dispatch(levelInit());
+            game.initLevel();
+
+            dispatch(levelInitFulfilled());
+            dispatch(start());
+
+        });
+// Каждый стейт возвращает промис,
         return () => {
             game.clear();
             game.destroy(true, true);
@@ -26,9 +52,9 @@ const Game = () => {
     }, []);
 
     return (<div>
-        <button onClick={() => dispatch(start())}>Start game</button>
-        <div>State: {state}</div>
-        <div ref={ref}></div>
+        {/*<button onClick={() => dispatch(start())}>TEST</button>*/}
+        <div>State --- {state}</div>
+        <div ref={mount}></div>
     </div>);
 }
 
