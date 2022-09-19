@@ -11,7 +11,7 @@ export default class House extends Sprite {
         this.texture = Texture.from(houseSources[Math.floor(Math.random() * houseSources.length)]);
     }
 
-    reset() {
+    reset = () => {
         this.texture = Texture.from(houseSources[Math.floor(Math.random() * houseSources.length)]);
     }
 }

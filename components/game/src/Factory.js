@@ -3,7 +3,7 @@ export default class Factory {
         this.items = [];
     }
 
-    getItem(type) {
+    getItem = (type) => {
         const freeItem = this.items.find(item => item.type === type && !item.instance.isActive)
         let item;
         if (freeItem) {
@@ -18,7 +18,7 @@ export default class Factory {
         return item;
     }
 
-    createItem(type) {
+    createItem = (type) => {
         return {}
     }
 

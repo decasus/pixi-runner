@@ -8,7 +8,7 @@ export default class Router {
         this.pathSize = 2;
     }
 
-    generateRoute() {
+    generateRoute = () => {
         let routes = [0, 0];
         do this.prevRoutes.forEach((route, i) => {
             const direction = randomInt(-1, 1);
@@ -29,7 +29,7 @@ export default class Router {
         return route;
     }
 
-    createMatrix() {
+    createMatrix = () => {
         const matrix = [];
         const route = this.generateRoute();
         for (let i = 0; i < this.pathSize; i++) {

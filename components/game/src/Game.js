@@ -3,20 +3,77 @@ import Level from "./Level";
 
 class RunnerGame extends Application {
 
-    constructor() {
+    constructor(mount, updateDistance, updateLifeCount) {
         super();
+        this.state = "idle";
+        this.mount = mount;
+        this.events = [];
+        this.updateDistance = updateDistance;
+        this.updateLifeCount = updateLifeCount;
     }
 
-    init(ref) {
+    loadTextures = (resolve, reject) => {
+        Loader.shared
+            .add('hero', '/images/hero.png')
+            .add('enemy_1', 'images/enemy_1.png')
+            .add('enemy_2', 'images/enemy_2.png')
+            .add('bonus', 'images/bonus.png')
+            .add('home_1', 'images/home-1.png')
+            .add('home_2', 'images/home-2.png')
+            .add('home_3', 'images/home-3.png')
+            .add('home_4', 'images/home-4.png')
+            .add('home_5', 'images/home-5.png')
+            .add('home_6', 'images/home-6.png')
+            .add('home_7', 'images/home-7.png')
+            .add('wave', 'images/wave.png')
+            .load();
+        Loader.shared.onComplete.add(() => resolve())
+        Loader.shared.onError.add(() => reject())
+    };
+
+    setState = (state) => {
+        this.state = state;
+        console.log(this.state);
+        return new Promise((resolve, reject) => {
+            switch (state) {
+                case "loading":
+                    this.loadTextures(resolve, reject);
+                    break;
+                case "init":
+                    this.init();
+                    resolve();
+                    break;
+                case "initLevel":
+                    this.initLevel();
+                    resolve();
+                    break;
+                case "showLevel":
+                    this.showLevel();
+                    resolve();
+                    break;
+                case "game":
+                    this.startGame();
+                    resolve();
+                    break;
+                default:
+                    resolve();
+                    break;
+            }
+        });
+    }
+
+    requestState = () => {
+        return this.state;
+    }
+
+    init = () => {
         this.renderer = new Renderer({
             width: 390, height: 844, backgroundColor: 0x323232, antialias: true
         });
-        this.intervals = [];
-        this.events = [];
-        ref.current.appendChild(this.view);
+        this.mount.current.appendChild(this.view);
     }
 
-    initTouchEvents(hero) {
+    initTouchEvents = (hero) => {
         let touchstartX = 0
         let touchendX = 0
 
@@ -39,46 +96,37 @@ class RunnerGame extends Application {
         this.events.push({type: "touchend", handler: touchEnd})
     }
 
-    loadTextures() {
-        return new Promise((resolve, reject) => {
-            Loader.shared
-                .add('hero', '/images/hero.png')
-                .add('enemy_1', 'images/enemy_1.png')
-                .add('enemy_2', 'images/enemy_2.png')
-                .add('bonus', 'images/bonus.png')
-                .add('home_1', 'images/home-1.png')
-                .add('home_2', 'images/home-2.png')
-                .add('home_3', 'images/home-3.png')
-                .add('home_4', 'images/home-4.png')
-                .add('home_5', 'images/home-5.png')
-                .add('home_6', 'images/home-6.png')
-                .add('home_7', 'images/home-7.png')
-                .add('wave', 'images/wave.png')
-                .load();
-            Loader.shared.onComplete.add(() => resolve())
-            Loader.shared.onError.add(() => reject())
-        });
-    };
-
-    initLevel() {
+    initLevel = () => {
         this.level = new Level();
         const {level} = this;
-        level.init();
-        this.initTouchEvents(level.hero);
+        level.init(this.updateDistance, this.updateLifeCount);
+        console.log(level);
         this.stage.addChild(level);
-        this.ticker.add(level.gameLoop);
     }
 
-    // Сообщаю игре стейт ->
-    // Могу создавать промис внутри обработчика, если не возвращает промис, то по умолчанию
+    showLevel = () => {
+        const {level} = this;
+        level.show();
+    }
 
-    clear() {
-        this.events.forEach(e => document.removeEventListener(e.type, e.handler))
+    startGame = () => {
+        const {level} = this;
+        this.ticker.add(level.gameLoop);
+        this.initTouchEvents(level.hero);
+    }
+
+    stopGame = () => {
+        const {level} = this;
+        this.ticker.stop();
+    }
+
+    clear = () => {
+        this.events.forEach(e => document.removeEventListener(e.type, e.handler));
         Loader.shared.reset();
     }
 }
 
-export default new RunnerGame;
+export default RunnerGame;
 
 
 // TODO ФАБРИКА ВОЗВРАЩАЕТ ПУСТОЙ ОБЪЕКТ - БАЗОВАЯ ФАБРИКА

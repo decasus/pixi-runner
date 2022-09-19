@@ -11,7 +11,7 @@ export default class Bonus extends Sprite {
         this.texture = Loader.shared.resources['bonus'].texture;
     }
 
-    reset() {
+    reset = () => {
         this.texture = Loader.shared.resources['bonus'].texture;
         this.alpha = 1;
     }
