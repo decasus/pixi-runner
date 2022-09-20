@@ -14,8 +14,8 @@ const gameSlice = createSlice({
         incrementDistance: (state, action) => {
             state.distance = action.payload;
         },
-        decrementLifeCount: (state) => {
-            state.lifeCount -= 1;
+        decrementLifeCount: (state,action) => {
+            state.lifeCount = action.payload;
         }
     },
 });

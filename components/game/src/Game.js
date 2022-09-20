@@ -3,13 +3,10 @@ import Level from "./Level";
 
 class RunnerGame extends Application {
 
-    constructor(mount, updateDistance, updateLifeCount) {
+    constructor(mount) {
         super();
-        this.state = "idle";
         this.mount = mount;
         this.events = [];
-        this.updateDistance = updateDistance;
-        this.updateLifeCount = updateLifeCount;
     }
 
     loadTextures = (resolve, reject) => {
@@ -32,8 +29,7 @@ class RunnerGame extends Application {
     };
 
     setState = (state) => {
-        this.state = state;
-        console.log(this.state);
+        console.log(state);
         return new Promise((resolve, reject) => {
             switch (state) {
                 case "loading":
@@ -48,14 +44,20 @@ class RunnerGame extends Application {
                     resolve();
                     break;
                 case "showLevel":
-                    this.showLevel();
-                    resolve();
+                    this.showLevel(resolve);
                     break;
                 case "game":
                     this.startGame();
                     resolve();
                     break;
+                case "loseAnim":
+                    this.level.loseAnim(resolve);
+                    break;
                 case "lose":
+                    this.stopGame();
+                    resolve();
+                    break;
+                case "showResults":
                     this.stopGame();
                     resolve();
                     break;
@@ -66,9 +68,7 @@ class RunnerGame extends Application {
         });
     }
 
-    requestState = () => {
-        return this.state;
-    }
+    requestState = () => {}
 
     init = () => {
         this.renderer = new Renderer({
@@ -103,25 +103,43 @@ class RunnerGame extends Application {
     initLevel = () => {
         this.level = new Level();
         const {level} = this;
-        level.init(this.updateDistance, this.updateLifeCount);
+        level.init();
+        this.updateDistance(0);
+        this.updateLifeCount(3);
+        level.updateDistance = this.updateDistance;
+        level.updateLifeCount = this.updateLifeCount;
+        level.requestState = this.requestState;
+        this.ticker.add(level.gameLoop);
+        this.ticker.start();
         console.log(level);
         this.stage.addChild(level);
     }
 
-    showLevel = () => {
+    showLevel = (resolve) => {
         const {level} = this;
-        level.show();
+        level.showAnim(resolve);
     }
 
     startGame = () => {
         const {level} = this;
-        this.ticker.add(level.gameLoop);
         this.initTouchEvents(level.hero);
     }
 
     stopGame = () => {
         const {level} = this;
+        level.clear();
+        this.stage.removeChild(level);
         this.ticker.stop();
+        this.ticker.remove(level.gameLoop);
+        this.events.forEach(e => document.removeEventListener(e.type, e.handler));
+    }
+
+    pause = () => {
+        this.ticker.stop();
+    }
+
+    unpause = () => {
+        this.ticker.start();
     }
 
     clear = () => {

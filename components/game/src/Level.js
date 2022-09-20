@@ -12,10 +12,11 @@ export default class Level extends Container {
         super();
         this.time = 0;
         this.distance = 0;
-        this.showLevelAnim = false;
+        this.lifeCount = 3;
+        this.gameOver = false;
     }
 
-    init = (updateDistance, updateLifeCount) => {
+    init = () => {
         this.speed = 4;
         this.hero = new Hero(235, 900);
         this.enemies = new Container();
@@ -23,20 +24,44 @@ export default class Level extends Container {
         this.addChild(this.enemies);
         this.router = new Router();
         this.factory = new GameFactory();
-        this.updateDistance = updateDistance;
-        this.updateLifeCount = updateLifeCount;
     }
 
-    show = () => {
-        this.showLevelAnim = true;
-        /*this.hero.x = 235;
-        this.hero.y = 720;*/
+    clear = () => {
+        this.removeChild(this.hero);
+        this.removeChild(this.enemies);
+    }
+
+    showAnim = (resolve) => {
+        let showAnimInterval = setInterval(() => {
+            if(this.hero.y > 750) {
+                this.hero.y -= 2;
+                //this.hero.scale.x = (this.hero.scale.x === -0.7) ? 0.7 : -0.7;
+            }
+            else {
+                clearInterval(showAnimInterval);
+                resolve();
+            }
+        }, 20)
+    }
+
+    loseAnim = (resolve) => {
+        this.gameOver = true;
+        const loseAnimInterval = setInterval(() => {
+            if(this.alpha > 0) this.alpha -= 0.05;
+            else {
+                clearInterval(loseAnimInterval);
+                resolve();
+            }
+        }, 50);
     }
 
     gameLoop = (delta) => {
-        this.time++;
 
-        if(this.showLevelAnim) this.hero.y > 750 ? this.hero.y -= 2 : this.showLevelAnim = 0;
+        if(this.gameOver) return;
+
+        if(this.lifeCount === 0) this.requestState('loseAnim');
+
+        this.time++;
 
         if (this.distance > 100) this.speed = 6;
         if (this.distance > 200) this.speed = 8;
@@ -81,7 +106,10 @@ export default class Level extends Container {
                     this.distance += 10;
                     this.updateDistance(this.distance);
                 }
-                else this.updateLifeCount();
+                else {
+                    this.lifeCount -= 1;
+                    this.updateLifeCount(this.lifeCount);
+                }
                 enemy.alpha = 0.2;
             }
             if (enemy.y > 1000) {

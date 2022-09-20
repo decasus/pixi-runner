@@ -12,5 +12,9 @@ export const config = {
     "initLevelComplete": {next: "showLevel", isWait: true},
     "showLevel": {next: "showLevelComplete", isWait: true},
     "showLevelComplete": {next: "game", isWait: true},
-    "game": {}
+    "game": {},
+    "loseAnim": {next: "lose", isWait: true},
+    "lose": {next: "showResults", isWait: true},
+    "showResults": {},
+    "pause": {}
 }

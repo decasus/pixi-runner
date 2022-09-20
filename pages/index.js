@@ -9,7 +9,6 @@ export default function Home() {
       <Head>
         <title>Runner</title>
       </Head>
-        {/*<button onClick={() => dispatch(increment())}*/}
         <Game />
     </div>
   )
