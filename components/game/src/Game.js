@@ -55,6 +55,10 @@ class RunnerGame extends Application {
                     this.startGame();
                     resolve();
                     break;
+                case "lose":
+                    this.stopGame();
+                    resolve();
+                    break;
                 default:
                     resolve();
                     break;

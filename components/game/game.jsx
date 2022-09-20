@@ -28,18 +28,20 @@ const Game = () => {
         game = new RunnerGame(mount, updateDistance, updateLifeCount);
 
         return () => {
-            //game.clear();
-            //game.destroy(true, true);
+            game.clear();
+            game.destroy(true, true);
         }
     }, []);
 
     useEffect(() => {
         const promise = game.setState(state);
-        const isWaitState = config[state].next;
 
-        //if(!isWaitState) game.requestState = (state) => dispatch(setState(state));
+        const nextState = config[state].next;
+        const isWaitState = config[state].isWait;
 
-        if(isWaitState) promise.then(() => dispatch(setState(isWaitState)));
+        game.requestState = (state) => dispatch(setState(state));
+
+        if(isWaitState && nextState) promise.then(() => dispatch(setState(nextState)));
         //else dispatch(setState(isWaitState));
 
     }, [state]);
