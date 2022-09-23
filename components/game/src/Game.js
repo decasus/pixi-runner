@@ -7,6 +7,7 @@ class RunnerGame extends Application {
         super();
         this.mount = mount;
         this.events = [];
+        this.resizeTo = window;
     }
 
     loadTextures = (resolve, reject) => {

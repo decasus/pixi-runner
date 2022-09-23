@@ -8,7 +8,7 @@ export default class Factory {
         let item;
         if (freeItem) {
             item = freeItem.instance;
-            item.reset();
+            if (item.hasOwnProperty('reset')) item.reset(); // TODO Проверка существует ли метод вообще
         }
         else {
             item = this.createItem(type);

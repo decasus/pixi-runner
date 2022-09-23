@@ -35,21 +35,21 @@ const Game = () => {
         const isWaitState = config[state].isWait;
 
         if (isWaitState && nextState) promise.then(() => dispatch(setState(nextState)));
-        if (!isWaitState && nextState) dispatch(setState(nextState));
+        //if (!isWaitState && nextState) dispatch(setState(nextState));
 
     }, [state]);
 
-    let lifeIcons = [];
-    for (let i = 0; i < lifeCount; i++) lifeIcons.push(<Image src={lifeIcon} width={20} height={20} alt='life'/>);
-
     return (
-
         <div>
             {
                 (state !== 'showResults') ?
                     <div className='game__stats'>
                         <span className={'game__stats-distance'}>{distance}<br/></span>
-                        <span className={'game__stats-lifes'}>{lifeIcons}</span>
+                        <span className={'game__stats-lifes'}>{
+                            Array.from(Array(lifeCount)).map((item, i) =>
+                            <Image key={i} src={lifeIcon} width={20} height={20} alt='life'/>)
+                        }
+                        </span>
                     </div>
                     :
                     <div className='game__results'>

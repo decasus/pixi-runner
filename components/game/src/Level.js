@@ -13,6 +13,7 @@ export default class Level extends Container {
         this.time = 0;
         this.distance = 0;
         this.lifeCount = 3;
+        this.immunity = false;
         this.gameOver = false;
     }
 
@@ -33,10 +34,7 @@ export default class Level extends Container {
 
     showAnim = (resolve) => {
         let showAnimInterval = setInterval(() => {
-            if(this.hero.y > 750) {
-                this.hero.y -= 2;
-                //this.hero.scale.x = (this.hero.scale.x === -0.7) ? 0.7 : -0.7;
-            }
+            if (this.hero.y > 750) this.hero.y -= 2;
             else {
                 clearInterval(showAnimInterval);
                 resolve();
@@ -47,7 +45,7 @@ export default class Level extends Container {
     loseAnim = (resolve) => {
         this.gameOver = true;
         const loseAnimInterval = setInterval(() => {
-            if(this.alpha > 0) this.alpha -= 0.05;
+            if (this.alpha > 0) this.alpha -= 0.05;
             else {
                 clearInterval(loseAnimInterval);
                 resolve();
@@ -55,60 +53,96 @@ export default class Level extends Container {
         }, 50);
     }
 
+    handleHeroMovement = () => {
+        if (this.hero.moveLeft) this.hero.x > this.hero.moveLeft ? this.hero.x -= 10 : this.hero.moveLeft = 0;
+        if (this.hero.moveRight) this.hero.x < this.hero.moveRight ? this.hero.x += 10 : this.hero.moveRight = 0;
+    }
+
+    animateHero = () => {
+        if (this.time % Math.round(50 / this.speed) === 1) {
+            if(this.immunity === true) this.hero.alpha = (this.hero.alpha === 0.2) ? 1 : 0.2;
+            else this.hero.alpha = 1;
+            this.hero.scale.x = (this.hero.scale.x === -0.7) ? 0.7 : -0.7;
+        }
+    }
+
+    spawnEnemy = (x, y) => {
+        const maxRandom = (this.speed === 4) ? 2 : (this.speed === 6) ? 1 : 0;
+        const chance = randomInt(0, maxRandom);
+        if (!chance) {
+            const enemy = this.factory.getItem("Enemy");
+            enemy.x = enemyPositions[x];
+            enemy.y = -100 * y;
+            this.enemies.addChild(enemy);
+        }
+    }
+
+    spawnBonus = (x, y) => {
+        const bonus = this.factory.getItem("Bonus");
+        bonus.x = enemyPositions[x];
+        bonus.y = -100 * y;
+        this.enemies.addChild(bonus);
+    }
+
+    setImmunity = () => {
+        const timeout = setTimeout(() => {
+            this.immunity = false;
+            clearTimeout(timeout)
+        }, 3000);
+    }
+
     gameLoop = (delta) => {
 
-        if(this.gameOver) return;
-
-        if(this.lifeCount === 0) this.requestState('loseAnim');
+        if (this.gameOver) return;
+        if (this.lifeCount === 0) this.requestState('loseAnim');
 
         this.time++;
 
-        if (this.distance > 100) this.speed = 6;
-        if (this.distance > 200) this.speed = 8;
+        // Двигаем героя если переданы координаты
+        this.handleHeroMovement();
+        // Анимируем героя
+        this.animateHero();
 
-        if (this.hero.moveLeft) this.hero.x > this.hero.moveLeft ? this.hero.x -= 10 : this.hero.moveLeft = 0;
-        if (this.hero.moveRight) this.hero.x < this.hero.moveRight ? this.hero.x += 10 : this.hero.moveRight = 0;
+        // Задержка до появления первых блоков
+        if (this.time < 100) return;
 
-        if (this.time % Math.round(50 / this.speed) === 1) this.hero.scale.x = (this.hero.scale.x === -0.7) ? 0.7 : -0.7;
-
-        if(this.time < 100) return;
-
+        // Генерация новых блоков
         if (this.time % Math.round(200 / this.speed) === 1) {
-            this.distance++
+            this.distance++;
             this.updateDistance(this.distance);
+
+            // Проверяем дистанцию и увеличиваем скорость (делаем паузу 5 блоков после повышения скорости)
+            if (this.distance > 50 && this.distance < 55) return this.speed = 6;
+            if (this.distance > 100 && this.distance < 105) return this.speed = 8;
+
             const matrix = this.router.createMatrix();
             matrix.forEach((matrixLine, lineIndex) => {
                 matrixLine.forEach((value, index) => {
-                    if (!value) {
-                        let maxRandom;
-                        maxRandom = (this.speed === 4) ? 2 : (this.speed === 6) ? 1 : 0;
-                        const chance = randomInt(0, maxRandom);
-                        if(!chance) {
-                            const enemy = this.factory.getItem("Enemy");
-                            enemy.x = enemyPositions[index];
-                            enemy.y = -100 * lineIndex;
-                            this.enemies.addChild(enemy);
-                        }
-                    }
-                    if (this.time % Math.round(400 / this.speed) === 1 && index === randomInt(0, 3) && lineIndex === 1 && matrixLine[index]) {
-                        const bonus = this.factory.getItem("Bonus");
-                        bonus.x = enemyPositions[index];
-                        bonus.y = -100 * lineIndex;
-                        this.enemies.addChild(bonus);
-                    }
+                    if (!value) this.spawnEnemy(index, lineIndex);
+                    if (this.time % Math.round(400 / this.speed) === 1 &&
+                        index === randomInt(0, 3) &&
+                        lineIndex === 1 &&
+                        matrixLine[index])
+                        this.spawnBonus(index, lineIndex);
                 })
             });
+
         }
+
+        // Проверка столкновений
         this.enemies.children.forEach(enemy => {
             enemy.y += this.speed * delta;
             if (rectIntersect(this.hero, enemy) && enemy.alpha === 1) {
-                if(enemy instanceof Bonus) {
+                if (enemy instanceof Bonus) {
                     this.distance += 10;
                     this.updateDistance(this.distance);
-                }
-                else {
-                    this.lifeCount -= 1;
-                    this.updateLifeCount(this.lifeCount);
+                } else {
+                    if (!this.immunity) {
+                        this.lifeCount -= 1;
+                        this.updateLifeCount(this.lifeCount);
+                        this.immunity = true;
+                        this.setImmunity();
+                    }
                 }
                 enemy.alpha = 0.2;
             }
@@ -117,5 +151,6 @@ export default class Level extends Container {
                 this.enemies.removeChild(enemy)
             }
         });
+
     }
 }
