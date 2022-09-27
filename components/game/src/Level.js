@@ -1,5 +1,5 @@
 import Hero from "./sprites/Hero";
-import {Container} from "pixi.js";
+import {Container, filters, Loader} from "pixi.js";
 import Router from "./Router";
 import {enemyPositions} from "../../../constants/constants";
 import {rectIntersect} from "../../../utils/rectIntersect";
@@ -20,16 +20,16 @@ export default class Level extends Container {
     init = () => {
         this.speed = 4;
         this.hero = new Hero(235, 900);
-        this.enemies = new Container();
+        this.blocks = new Container();
         this.addChild(this.hero);
-        this.addChild(this.enemies);
+        this.addChild(this.blocks);
         this.router = new Router();
         this.factory = new GameFactory();
     }
 
     clear = () => {
         this.removeChild(this.hero);
-        this.removeChild(this.enemies);
+        this.removeChild(this.blocks);
     }
 
     showAnim = (resolve) => {
@@ -70,10 +70,11 @@ export default class Level extends Container {
         const maxRandom = (this.speed === 4) ? 2 : (this.speed === 6) ? 1 : 0;
         const chance = randomInt(0, maxRandom);
         if (!chance) {
-            const enemy = this.factory.getItem("Enemy");
+            const texture = [Loader.shared.resources['enemy_1'].texture, Loader.shared.resources['enemy_2'].texture][randomInt(0, 1)];
+            const enemy = this.factory.getItem("Enemy", texture);
             enemy.x = enemyPositions[x];
             enemy.y = -100 * y;
-            this.enemies.addChild(enemy);
+            this.blocks.addChild(enemy);
         }
     }
 
@@ -81,10 +82,11 @@ export default class Level extends Container {
         const bonus = this.factory.getItem("Bonus");
         bonus.x = enemyPositions[x];
         bonus.y = -100 * y;
-        this.enemies.addChild(bonus);
+        this.blocks.addChild(bonus);
     }
 
     setImmunity = () => {
+        this.immunity = true;
         const timeout = setTimeout(() => {
             this.immunity = false;
             clearTimeout(timeout)
@@ -100,6 +102,7 @@ export default class Level extends Container {
 
         // Двигаем героя если переданы координаты
         this.handleHeroMovement();
+
         // Анимируем героя
         this.animateHero();
 
@@ -126,31 +129,28 @@ export default class Level extends Container {
                         this.spawnBonus(index, lineIndex);
                 })
             });
-
         }
 
         // Проверка столкновений
-        this.enemies.children.forEach(enemy => {
-            enemy.y += this.speed * delta;
-            if (rectIntersect(this.hero, enemy) && enemy.alpha === 1) {
-                if (enemy instanceof Bonus) {
+        this.blocks.children.forEach(block => {
+            block.y += this.speed * delta;
+            if (rectIntersect(this.hero, block) && block.alpha === 1) {
+                if (block instanceof Bonus) {
                     this.distance += 10;
                     this.updateDistance(this.distance);
                 } else {
                     if (!this.immunity) {
                         this.lifeCount -= 1;
                         this.updateLifeCount(this.lifeCount);
-                        this.immunity = true;
                         this.setImmunity();
                     }
                 }
-                enemy.alpha = 0.2;
+                block.alpha = 0.2;
             }
-            if (enemy.y > 1000) {
-                enemy.isActive = false;
-                this.enemies.removeChild(enemy)
+            if (block.y > 1000) {
+                block.isActive = false;
+                this.blocks.removeChild(block)
             }
         });
-
     }
 }

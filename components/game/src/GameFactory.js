@@ -7,9 +7,9 @@ export default class GameFactory extends Factory {
     constructor() {
         super();
     }
-    createItem = (type) => {
+    createItem = (type, texture) => {
         switch(type) {
-            case "Enemy": return new Enemy();
+            case "Enemy": return new Enemy(texture);
             case "House": return new House();
             case "Bonus": return new Bonus();
         }

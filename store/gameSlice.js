@@ -22,9 +22,3 @@ const gameSlice = createSlice({
 
 export default gameSlice.reducer
 export const { setState, incrementDistance, decrementLifeCount } = gameSlice.actions;
-
-
-// TODO СОЗДАТЬ СЛАЙС ПОД ИГРУ
-// TODO СВОЙСТВО STATE
-// TODO КОМПОЕНТ ЗАМОУНТИЛСЯ -> СОСТОЯНИЕ ЗАГРУЗКИ, ВЫЗЫВАЮ РЕДЮСЕР, МЕНЯЮ НА ЛОАДИНГ
-// TODO ИГРА ДОЛЖНА ВЕРНУТЬ ПРОМИС ВЫОЛНЕНИЯ СОСТОЯНИЯ

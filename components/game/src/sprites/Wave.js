@@ -10,3 +10,4 @@ export default class Wave extends Sprite {
         this.texture = Texture.from('images/wave.png');
     }
 }
+

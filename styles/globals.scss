@@ -28,11 +28,13 @@ a {
     }
     > button {
       font-weight: bold;
-      background: bisque;
+      background: #0179a6;
+      border-radius: 10px;
+      color: white;
       outline: none;
       border: none;
       padding: 10px;
-      margin-top: 10px;
+      margin-top: 30px;
     }
    }
   &__stats {
@@ -47,6 +49,7 @@ a {
     font-weight: 500;
     &-lifes {
       min-width: 30%;
+      text-align: center;
     }
     &-distance {
       display: flex;
@@ -58,5 +61,13 @@ a {
       border-radius: 100%;
       text-align: center;
     }
+  }
+  &__pause-button {
+    background: #1c1c1c;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px;
   }
 }

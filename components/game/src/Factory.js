@@ -3,17 +3,18 @@ export default class Factory {
         this.items = [];
     }
 
-    getItem = (type) => {
+    getItem = (type, texture) => {
         const freeItem = this.items.find(item => item.type === type && !item.instance.isActive)
         let item;
         if (freeItem) {
             item = freeItem.instance;
-            if (item.hasOwnProperty('reset')) item.reset(); // TODO Проверка существует ли метод вообще
+            if (item.hasOwnProperty('reset')) item.reset();
         }
         else {
             item = this.createItem(type);
             this.items.push({type: type, instance: item});
         }
+        if(texture) item.texture = texture;
         item.isActive = true;
         return item;
     }

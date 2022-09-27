@@ -8,6 +8,7 @@ class RunnerGame extends Application {
         this.mount = mount;
         this.events = [];
         this.resizeTo = window;
+        this.paused = false;
     }
 
     loadTextures = (resolve, reject) => {
@@ -69,8 +70,6 @@ class RunnerGame extends Application {
         });
     }
 
-    requestState = () => {}
-
     init = () => {
         this.renderer = new Renderer({
             width: 390, height: 844, backgroundColor: 0x323232, antialias: true
@@ -96,9 +95,9 @@ class RunnerGame extends Application {
         }
 
         document.addEventListener("touchstart", touchStart);
-        this.events.push({type: "touchstart", handler: touchStart})
+        this.events.push({type: "touchstart", handler: touchStart});
         document.addEventListener("touchend", touchEnd);
-        this.events.push({type: "touchend", handler: touchEnd})
+        this.events.push({type: "touchend", handler: touchEnd});
     }
 
     initLevel = () => {
@@ -135,14 +134,6 @@ class RunnerGame extends Application {
         this.events.forEach(e => document.removeEventListener(e.type, e.handler));
     }
 
-    pause = () => {
-        this.ticker.stop();
-    }
-
-    unpause = () => {
-        this.ticker.start();
-    }
-
     clear = () => {
         this.events.forEach(e => document.removeEventListener(e.type, e.handler));
         Loader.shared.reset();
@@ -150,8 +141,3 @@ class RunnerGame extends Application {
 }
 
 export default RunnerGame;
-
-
-// TODO ФАБРИКА ВОЗВРАЩАЕТ ПУСТОЙ ОБЪЕКТ - БАЗОВАЯ ФАБРИКА
-// TODO КАСТОМНАЯ ФАБРИКА
-// TODO ФУНКЦИЯ RESET В КЛАССЕ ИЛИ В ФАБРИКЕ
