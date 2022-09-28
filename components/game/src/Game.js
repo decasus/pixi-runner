@@ -7,9 +7,8 @@ class RunnerGame extends Application {
         super();
         this.mount = mount;
         this.events = [];
-        this.resizeTo = window;
-        this.paused = false;
     }
+
 
     loadTextures = (resolve, reject) => {
         Loader.shared
@@ -29,6 +28,21 @@ class RunnerGame extends Application {
         Loader.shared.onComplete.add(() => resolve())
         Loader.shared.onError.add(() => reject())
     };
+
+    resize = () => {
+
+        const parent = this.view.parentNode;
+        //const scale = window.devicePixelRatio;
+
+        //this.renderer.autoResize = true;
+        this.renderer.resize(parent.clientWidth, parent.clientHeight);
+
+        this.renderer.view.style.width = parent.clientWidth + 'px';
+        this.renderer.view.style.height = parent.clientHeight + 'px';
+
+        //this.stage.scale.set(scale, scale);
+
+    }
 
     setState = (state) => {
         console.log(state);
@@ -52,14 +66,14 @@ class RunnerGame extends Application {
                     this.startGame();
                     resolve();
                     break;
+                case "pause":
+                    this.pause();
+                    resolve();
+                    break;
                 case "loseAnim":
                     this.level.loseAnim(resolve);
                     break;
                 case "lose":
-                    this.stopGame();
-                    resolve();
-                    break;
-                case "showResults":
                     this.stopGame();
                     resolve();
                     break;
@@ -72,9 +86,16 @@ class RunnerGame extends Application {
 
     init = () => {
         this.renderer = new Renderer({
-            width: 390, height: 844, backgroundColor: 0x323232, antialias: true
+            width: 390, height: 844, backgroundColor: 0x323232, antialias: true, resolution: 1
         });
         this.mount.current.appendChild(this.view);
+        this.resize();
+        addEventListener("resize", this.resize);
+        this.events.push({type: "resize", handler: this.resize});
+        console.log(this.stage);
+        this.stage.x = 195;
+        this.stage.y = 844;
+
     }
 
     initTouchEvents = (hero) => {
@@ -82,8 +103,8 @@ class RunnerGame extends Application {
         let touchendX = 0
 
         const checkDirection = () => {
-            if (touchendX < touchstartX && hero.x > 75) hero.moveLeft = hero.x - 80;
-            if (touchendX > touchstartX && hero.x < 315) hero.moveRight = hero.x + 80;
+            if (touchendX < touchstartX && hero.x > -120) hero.moveLeft = hero.x - 80;
+            if (touchendX > touchstartX && hero.x < 120) hero.moveRight = hero.x + 80;
         }
 
         const touchStart = (e) => {
@@ -110,8 +131,6 @@ class RunnerGame extends Application {
         level.updateLifeCount = this.updateLifeCount;
         level.requestState = this.requestState;
         this.ticker.add(level.gameLoop);
-        this.ticker.start();
-        console.log(level);
         this.stage.addChild(level);
     }
 
@@ -121,8 +140,12 @@ class RunnerGame extends Application {
     }
 
     startGame = () => {
-        const {level} = this;
-        this.initTouchEvents(level.hero);
+        this.ticker.start();
+        this.initTouchEvents(this.level.hero);
+    }
+
+    pause = () => {
+        this.ticker.stop();
     }
 
     stopGame = () => {

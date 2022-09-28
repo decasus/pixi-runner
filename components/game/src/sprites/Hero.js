@@ -1,4 +1,4 @@
-import {Loader, Sprite, Texture} from "pixi.js";
+import {Loader, Sprite} from "pixi.js";
 
 export default class Hero extends Sprite {
     constructor(x = 0, y = 0) {
@@ -11,6 +11,4 @@ export default class Hero extends Sprite {
         this.moveLeft = 0;
         this.moveRight = 0;
     }
-
-
 }

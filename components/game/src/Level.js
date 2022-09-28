@@ -19,7 +19,7 @@ export default class Level extends Container {
 
     init = () => {
         this.speed = 4;
-        this.hero = new Hero(235, 900);
+        this.hero = new Hero(40, -80);
         this.blocks = new Container();
         this.addChild(this.hero);
         this.addChild(this.blocks);
@@ -60,7 +60,7 @@ export default class Level extends Container {
 
     animateHero = () => {
         if (this.time % Math.round(50 / this.speed) === 1) {
-            if(this.immunity === true) this.hero.alpha = (this.hero.alpha === 0.2) ? 1 : 0.2;
+            if (this.immunity === true) this.hero.alpha = (this.hero.alpha === 0.2) ? 1 : 0.2;
             else this.hero.alpha = 1;
             this.hero.scale.x = (this.hero.scale.x === -0.7) ? 0.7 : -0.7;
         }
@@ -70,10 +70,10 @@ export default class Level extends Container {
         const maxRandom = (this.speed === 4) ? 2 : (this.speed === 6) ? 1 : 0;
         const chance = randomInt(0, maxRandom);
         if (!chance) {
-            const texture = [Loader.shared.resources['enemy_1'].texture, Loader.shared.resources['enemy_2'].texture][randomInt(0, 1)];
+            const texture = Loader.shared.resources[`enemy_${randomInt(1, 2)}`].texture;
             const enemy = this.factory.getItem("Enemy", texture);
             enemy.x = enemyPositions[x];
-            enemy.y = -100 * y;
+            enemy.y = (-100 * y) - this.blocks.y - 1000;
             this.blocks.addChild(enemy);
         }
     }
@@ -81,8 +81,23 @@ export default class Level extends Container {
     spawnBonus = (x, y) => {
         const bonus = this.factory.getItem("Bonus");
         bonus.x = enemyPositions[x];
-        bonus.y = -100 * y;
+        bonus.y = (-100 * y) - this.blocks.y - 1000;
         this.blocks.addChild(bonus);
+    }
+
+    spawnHomes = () => {
+        for (let i = 0; i < 3; i++) {
+            let texture = Loader.shared.resources[`home_${randomInt(1, 7)}`].texture;
+            const homeLeft = this.factory.getItem("House", texture);
+            homeLeft.x = 14;
+            homeLeft.y = 75 * (i - 5);
+            this.blocks.addChild(homeLeft);
+            texture = Loader.shared.resources[`home_${randomInt(1, 7)}`].texture;
+            const homeRight = this.factory.getItem("House", texture);
+            homeRight.x = 376;
+            homeRight.y = 75 * (i - 5);
+            this.blocks.addChild(homeRight);
+        }
     }
 
     setImmunity = () => {
@@ -118,7 +133,13 @@ export default class Level extends Container {
             if (this.distance > 50 && this.distance < 55) return this.speed = 6;
             if (this.distance > 100 && this.distance < 105) return this.speed = 8;
 
+            //if (this.distance > 50) this.speed = 6;
+            //if (this.distance > 100) this.speed = 8;
+
+            //this.spawnHomes();
+
             const matrix = this.router.createMatrix();
+
             matrix.forEach((matrixLine, lineIndex) => {
                 matrixLine.forEach((value, index) => {
                     if (!value) this.spawnEnemy(index, lineIndex);
@@ -130,10 +151,9 @@ export default class Level extends Container {
                 })
             });
         }
-
+        this.blocks.y += this.speed;
         // Проверка столкновений
         this.blocks.children.forEach(block => {
-            block.y += this.speed * delta;
             if (rectIntersect(this.hero, block) && block.alpha === 1) {
                 if (block instanceof Bonus) {
                     this.distance += 10;
@@ -147,7 +167,7 @@ export default class Level extends Container {
                 }
                 block.alpha = 0.2;
             }
-            if (block.y > 1000) {
+            if (block.y + block.parent.y > 1000) {
                 block.isActive = false;
                 this.blocks.removeChild(block)
             }

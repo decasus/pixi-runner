@@ -21,21 +21,6 @@ const Game = () => {
         game.updateDistance = (value) => dispatch(incrementDistance(value));
         game.updateLifeCount = (value) => dispatch(decrementLifeCount(value));
 
-        //document.body.onresize = () => game.resize();
-
-        game.pause = () => {
-            if(!game.paused) {
-                game.ticker.stop();
-                game.paused = true;
-                dispatch(setState('pause'));
-            }
-            else {
-                game.ticker.start();
-                game.paused = false;
-                dispatch(setState('game'));
-            }
-
-        }
         return () => {
             game.clear();
             game.destroy(true, true);
@@ -60,7 +45,8 @@ const Game = () => {
                             <Image key={index} src={lifeIcon} width={20} height={20} alt='life'/>)
                         }
                         </span>
-                        <button className={'game__pause-button'} onClick={() => game.pause()}>Pause</button>
+                        <button className={'game__pause-button'}
+                                onClick={() => state === 'game' ? dispatch(setState('pause')) : dispatch(setState('game'))}>Pause</button>
                     </div>
                     :
                     <div className='game__results'>
@@ -68,7 +54,7 @@ const Game = () => {
                         <button className={'game__restart-button'} onClick={() => dispatch(setState('initLevel'))}>Начать заново</button>
                     </div>
             }
-            <div ref={mount}/>
+            <div className='game' ref={mount}/>
         </div>);
 }
 

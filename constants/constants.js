@@ -1,4 +1,4 @@
-export const enemyPositions = [75, 155, 235, 315];
+export const enemyPositions = [-120, -40, 40, 120];
 
 export const config = {
     "idle": {next: "loading", isWait: true},
